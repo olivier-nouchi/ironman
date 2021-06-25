@@ -1,5 +1,5 @@
 import pickle
-from src import config
+import config
 import create_db
 import scrape_ironman
 import pymysql

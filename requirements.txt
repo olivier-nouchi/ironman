@@ -103,3 +103,8 @@ wcwidth @ file:///tmp/build/80754af9/wcwidth_1593447189090/work
 webencodings==0.5.1
 widgetsnbextension==3.5.1
 zipp @ file:///tmp/build/80754af9/zipp_1615904174917/work
+
+pymysql~=0.10.1
+requests~=2.25.1
+tqdm~=4.60.0
+beautifulsoup4~=4.9.3

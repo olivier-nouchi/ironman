@@ -138,3 +138,135 @@ def update_results_table(connection, result_features):
     with connection.cursor() as cursor:
         cursor.executemany(query_insert_results_table, result_features)
         connection.commit()
+
+
+def get_event_id_missing_feature(connection, table, missing_feature):
+    """
+    Get the a list of event ids in a given table where data is missing in a specific column (=feature
+    :param connection:
+    :param table:
+    :param missing_feature:
+    :return:
+    """
+
+    query_missing_data = f"""SELECT event_id FROM {table} WHERE {missing_feature} is NULL"""
+
+    with connection.cursor() as cursor:
+        cursor.execute(query_missing_data)
+        list_event_ids = [dictionary.get('event_id') for dictionary in cursor.fetchall()]
+
+    return list_event_ids
+
+
+def get_race_card_from_event_id(connection, event_id):
+    """
+    Gets the race card given an event id
+    :param connection:
+    :param event_id:
+    :return:
+    """
+
+    query_race_card = f"""SELECT race_card FROM races as r JOIN events_im AS e ON r.race_link = e.race_link
+                        WHERE event_id = '{event_id}'"""
+
+    with connection.cursor() as cursor:
+        cursor.execute(query_race_card)
+        race_card = cursor.fetchone().get('race_card')
+
+    return race_card
+
+
+def update_missing_date_from_event_id(connection, event_id, table, feature_to_fill, value):
+    """
+    Updating the database with the value to fill with in for the given feature
+    :param connection:
+    :param event_id:
+    :param table:
+    :param feature_to_fill:
+    :param value:
+    :return:
+    """
+    if isinstance(value, float) or value == "NULL":
+        query_update_missing_value = f"""UPDATE {table} SET {feature_to_fill} = {value} WHERE event_id = '{event_id}'"""
+    elif isinstance(value, str):
+        query_update_missing_value = f"""UPDATE {table} SET {feature_to_fill} = "{value}" WHERE event_id = '{event_id}'"""
+    elif value is None:
+        query_update_missing_value = f"""UPDATE {table} SET {feature_to_fill} = NULL WHERE event_id = '{event_id}'"""
+    else:
+        query_update_missing_value = """"""
+
+    with connection.cursor() as cursor:
+        cursor.execute(query_update_missing_value)
+        connection.commit()
+
+
+def deduct_distances_from_series_feature(connection, event_id):
+    """
+    Deduct the distance of the event from the series name
+    :param connection:
+    :param event_id:
+    :return:
+    """
+
+    query_deduct_distance = f"""SELECT CASE 
+                                            WHEN series LIKE '%70.3%' THEN 70.30
+                                            WHEN series LIKE '%5150%' THEN 32.00
+                                            ELSE 140.60
+                                        END AS distance_miles
+                            FROM races AS r LEFT JOIN events_im AS e ON r.race_link = e.race_link 
+                            WHERE event_id = '{event_id}' """
+
+    with connection.cursor() as cursor:
+        cursor.execute(query_deduct_distance)
+        distance_miles = float(cursor.fetchone().get('distance_miles'))
+
+    distance_kms = config.dict_miles_to_kms.get(distance_miles)
+
+    return distance_miles, distance_kms
+
+
+def deduct_city_from_race_card(connection, event_id):
+    """
+    Deduct the city from the race_card name
+    :param connection:
+    :param event_id:
+    :return:
+    """
+    query_deduct_city = f"""SELECT race_card
+                            FROM races AS r LEFT JOIN events_im AS e ON r.race_link = e.race_link 
+                            WHERE event_id = '{event_id}' """
+
+    with connection.cursor() as cursor:
+        cursor.execute(query_deduct_city)
+        race_card_name = cursor.fetchone().get('race_card')
+
+    city = race_card_name.split(',')[config.FIRST_RESULT]
+
+    return city
+
+
+def deduct_continent_from_races(connection, event_id):
+    """
+    Deduct the continent from races continent
+    :param connection:
+    :param event_id:
+    :return:
+    """
+    query_deduct_continent = f"""SELECT r.continent
+                            FROM races AS r LEFT JOIN events_im AS e ON r.race_link = e.race_link 
+                            WHERE event_id = '{event_id}' """
+
+    with connection.cursor() as cursor:
+        cursor.execute(query_deduct_continent)
+        races_continent = cursor.fetchone().get('continent')
+
+    events_continent = config.dict_continents.get(races_continent)
+
+    return events_continent
+
+
+if __name__ == '__main__':
+
+    connection = create_connection_db()
+    use_ironman_db(connection, config.database_name)
+    print(deduct_continent_from_races(connection, event_id='00AFC145-4270-E611-940F-005056951BF1'))

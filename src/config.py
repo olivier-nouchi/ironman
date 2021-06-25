@@ -3,6 +3,7 @@ import json
 
 # Directories
 cwd = os.getcwd()
+project_dir = os.path.join(cwd, os.pardir)
 input_dir = "input"
 pickle_dir = "pickles"
 
@@ -16,8 +17,11 @@ URL_RESULTS = """https://api.competitor.com/public/result/subevent/"""
 URL_EVENT = """https://api.competitor.com/public/events/"""
 IRONMAN_URL = 'https://ironman.com'
 
+URL_GEO_LOCATION = """https://api.opencagedata.com/geocode/v1/json?q="""
+PARAMETERS_URL_GEO_LOCATION = """&key=641c51bed8ab490184632ad8526e29ad&no_annotations=1&language=en"""
+
 # open the user config json file
-user_config_filepath = os.path.join(cwd, input_dir, user_config_filename)
+user_config_filepath = os.path.join(project_dir, input_dir, user_config_filename)
 with open(user_config_filepath, 'rb') as f:
     user_config = json.load(f)
 
@@ -27,11 +31,17 @@ LOCAL_DB_PASSWORD = user_config.get("user_local_db_password")
 
 # Position of the race link in the dicitionary races
 RACE_LINK_DICT_RACES = 0
+FIRST_RESULT = 0
+
+# Mapping continents with acronyms
+dict_continents = {"Africa": "AF", "Asia": "AS", "Europe": "EU", "North America": "NA", "Oceania": "OC",
+                   "South America": "SA"}
+
+# Mapping distances miles to kms
+dict_miles_to_kms = {70.30: 113.00, 140.60: 226.00, 32.00: 51.50}
 
 # Pickles
 dict_event_id_pickle_filepath = os.path.join(cwd, pickle_dir, dict_event_id_race_filename)
 
 # Database names
 database_name = 'ironman_db'
-
-

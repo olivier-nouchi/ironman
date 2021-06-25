@@ -1,12 +1,19 @@
 import helper_functions
 from tqdm import tqdm
-from src import config
+import config
 from bs4 import BeautifulSoup as soup
 import requests
 import time
 import create_db
 import pandas as pd
 
+def update_race_status():
+    """
+    Update the race status since the registration can change over time
+    :return:
+    """
+    #TODO create a function to update the race status over time
+    pass
 
 def get_existing_event_id(connection, pk_column='event_id', table='events_im'):
     """
@@ -103,8 +110,9 @@ def get_dict_event_id(dict_races):
                 event_id = content_year.find("iframe")['src'].split('/')[-1]
                 # Building a map of which event corresponds to which race
                 dict_event_id_race[event_id] = race_url
-            except:
-                print(f'An error was found for: {results_url}')
+            except Exception as e:
+                print(e)
+                # print(f'An error was found for: {results_url}')
 
     print(f"There are {len(dict_event_id_race)} ironman events.")
     return dict_event_id_race
@@ -216,7 +224,7 @@ def scrape_event_results(connection, list_event_id_to_scrape_from):
                     gender = result.get('Contact').get('Gender') if result.get('Contact') else ''
 
                     result_feature = (
-                        event_id, country, subevent_name, age_group, event_status, swim_time, t1_time, bike_time,
+                        event_id, subevent_name, country, age_group, event_status, swim_time, t1_time, bike_time,
                         t2_time, run_time, finish_time, finish_rank_group,
                         finish_rank_gender, finish_rank_overall, rank_points, athlete_name, gender)
 
@@ -237,3 +245,13 @@ def scrape_event_results(connection, list_event_id_to_scrape_from):
             update_threshold += 5
 
     print("FINISHED")
+
+if __name__ == '__main__':
+    pass
+    # event_id = '4B014045-C399-E911-A97A-000D3A37468C'
+    # event_id = 'E79709F2-36A2-E811-A960-000D3A3740B7'
+    # parameters = """?%24limit=200&%24skip=0&%24sort%5BFinishRankOverall%5D=1"""
+    # url_results = config.URL_RESULTS + event_id + parameters
+    # print(url_results)
+    # total_records_event = requests.get(url_results, headers=config.HEADERS).json()
+    # print(total_records_event)
