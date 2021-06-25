@@ -1,5 +1,5 @@
 import pymysql
-from src import config
+import config
 
 
 def create_connection_db():

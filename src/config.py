@@ -1,9 +1,11 @@
 import os
 import json
+from pathlib import Path
 
 # Directories
-cwd = os.getcwd()
-project_dir = os.path.join(cwd, os.pardir)
+# root directory of the project
+ROOT_DIR = Path(os.path.dirname(os.path.abspath(__file__))).parent.absolute()
+project_dir = Path(ROOT_DIR).parent.absolute()
 input_dir = "input"
 pickle_dir = "pickles"
 
@@ -21,7 +23,7 @@ URL_GEO_LOCATION = """https://api.opencagedata.com/geocode/v1/json?q="""
 PARAMETERS_URL_GEO_LOCATION = """&key=641c51bed8ab490184632ad8526e29ad&no_annotations=1&language=en"""
 
 # open the user config json file
-user_config_filepath = os.path.join(project_dir, input_dir, user_config_filename)
+user_config_filepath = os.path.join(ROOT_DIR, input_dir, user_config_filename)
 with open(user_config_filepath, 'rb') as f:
     user_config = json.load(f)
 
@@ -41,7 +43,7 @@ dict_continents = {"Africa": "AF", "Asia": "AS", "Europe": "EU", "North America"
 dict_miles_to_kms = {70.30: 113.00, 140.60: 226.00, 32.00: 51.50}
 
 # Pickles
-dict_event_id_pickle_filepath = os.path.join(cwd, pickle_dir, dict_event_id_race_filename)
+dict_event_id_pickle_filepath = os.path.join(ROOT_DIR, pickle_dir, dict_event_id_race_filename)
 
 # Database names
 database_name = 'ironman_db'
