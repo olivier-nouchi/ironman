@@ -1,7 +1,7 @@
 # Introduction
 
-This project was born out of curiosity. Not any statistics can be found on the internet on IronMan and triathlons in
-general. It aims at understanding further the performance of athletes and mine insightful findings.
+This project was born out of curiosity. No statistics can be found on the internet on IronMan and triathlons in
+general. It aims at understanding further the performance of athletes and mine insightful findings through Machine Learning models.
 
 
 # Installation
