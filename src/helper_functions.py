@@ -11,8 +11,12 @@ def fahrenheit_to_celcius(temp):
 
 
 def display_eta(start_time, pct_progress):
-    """ Give an ETA and display it every threshold_step%"""
-
+    """
+    Give an ETA and display it every threshold_step %
+    :param start_time:
+    :param pct_progress:
+    :return:
+    """
     # 1. How much time it took until now:
     current_time_taken = time.time() - start_time
     time_to_do_100_pct_min = (current_time_taken * 100 / pct_progress) / 60

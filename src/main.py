@@ -4,6 +4,8 @@ import create_db
 import scrape_ironman
 import pymysql
 
+# TODO: add a logger
+
 if __name__ == "__main__":
 
     # Boolean whether to scrape the event ids (takes ~10 minutes)

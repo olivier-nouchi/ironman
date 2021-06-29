@@ -73,7 +73,7 @@ def create_tables(con, which_tables=()):
                                 )"""
 
     query_create_results_table = f"""CREATE TABLE IF NOT EXISTS results(
-                                result_id INT AUTO_INCREMENT UNIQUE KEY,
+                                id INT AUTO_INCREMENT UNIQUE KEY,
                                 event_id VARCHAR(100),
                                 athlete_id VARCHAR(100),
                                 result_id VARCHAR(100),

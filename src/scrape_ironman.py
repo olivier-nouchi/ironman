@@ -112,8 +112,9 @@ def get_dict_event_id(dict_races):
                 event_id = content_year.find("iframe")['src'].split('/')[-1]
                 # Building a map of which event corresponds to which race
                 dict_event_id_race[event_id] = race_url
-            except Exception as e:
-                print(e)
+            # raises an exception when event_id is not found in the iframe src tag
+            except TypeError:
+                pass
                 # print(f'An error was found for: {results_url}')
 
     print(f"There are {len(dict_event_id_race)} ironman events.")
