@@ -7,32 +7,38 @@ def create_connection_db():
 
     :return:
     """
-    connection = pymysql.connect(host='localhost',
-                                 user='root',
-                                 password=config.LOCAL_DB_PASSWORD,
-                                 charset='utf8mb4',
-                                 cursorclass=pymysql.cursors.DictCursor)
-    return connection
+    con = pymysql.connect(host='localhost',
+                          user='root',
+                          password=config.LOCAL_DB_PASSWORD,
+                          charset='utf8mb4',
+                          cursorclass=pymysql.cursors.DictCursor)
+    return con
 
 
-def use_ironman_db(connection, db_name):
+def use_ironman_db(con, db_name):
     """
 
-    :param connection:
+    :param con:
     :param db_name:
     :return:
     """
-    with connection.cursor() as cursor:
+    with con.cursor() as cursor:
         cursor.execute(f"""USE {db_name}""")
 
 
-def create_database(connection, db_name):
+def create_database(con, db_name):
+    """
+
+    :param con:
+    :param db_name:
+    :return:
+    """
     query_create_db = f"""CREATE DATABASE IF NOT EXISTS {db_name}"""
-    with connection.cursor() as cursor:
+    with con.cursor() as cursor:
         cursor.execute(query_create_db)
 
 
-def create_tables(connection, which_tables=[]):
+def create_tables(con, which_tables=()):
     query_create_races_table = f"""CREATE TABLE IF NOT EXISTS races(
                                 race_link VARCHAR(100) PRIMARY KEY,
                                 series VARCHAR(50),
@@ -69,6 +75,8 @@ def create_tables(connection, which_tables=[]):
     query_create_results_table = f"""CREATE TABLE IF NOT EXISTS results(
                                 result_id INT AUTO_INCREMENT UNIQUE KEY,
                                 event_id VARCHAR(100),
+                                athlete_id VARCHAR(100),
+                                result_id VARCHAR(100),
                                 subevent_name VARCHAR(50),
                                 country VARCHAR(100),
                                 age_group VARCHAR(50),
@@ -84,66 +92,79 @@ def create_tables(connection, which_tables=[]):
                                 finish_rank_overall INT,
                                 rank_point DECIMAL(8,2),
                                 name VARCHAR(100),
-                                gender CHAR(1)
+                                gender CHAR(1),
+                                PRIMARY KEY (event_id, athlete_id)
                                 )"""
 
     # creates a mapping between the names of the tables to create and the queries
     dict_create_tables = {"races": query_create_races_table, "events_im": query_create_events_table,
                           "results": query_create_results_table}
 
-    with connection.cursor() as cursor:
+    with con.cursor() as cursor:
         for table in which_tables:
             cursor.execute(dict_create_tables.get(table))
 
 
-def drop_table(connection, which_tables=[]):
+def drop_table(con, which_tables=()):
     """
 
-    :param connection:
+    :param con:
     :param which_tables:
     :return:
     """
     for table in which_tables:
         query_drop_table = f"""DROP TABLE IF EXISTS {table}"""
-        with connection.cursor() as cursor:
+        with con.cursor() as cursor:
             cursor.execute(query_drop_table)
 
 
-def update_races_table(connection, race_features):
+def update_races_table(con, race_features):
     query_insert_races_table = f"""INSERT INTO races(race_link, series, title, continent, country, race_card, 
     race_status, swim, bike, run, avg_air_temp, avg_water_temp, airport) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,
     %s) """
 
-    with connection.cursor() as cursor:
+    with con.cursor() as cursor:
         cursor.executemany(query_insert_races_table, race_features)
-        connection.commit()
+        con.commit()
 
 
-def update_events_table(connection, event_features):
+def update_events_table(con, event_features):
+    """
+
+    :param con:
+    :param event_features:
+    :return:
+    """
     query_insert_events_table = f"""INSERT INTO events_im(event_id, race_link, event, subevent, date, latitude, 
     longitude, alias, dist_km, dist_mi, city, continent, registration_status, total_records) VALUES(%s,%s,%s,%s,%s,
     %s,%s,%s,%s,%s,%s,%s,%s,%s) """
 
-    with connection.cursor() as cursor:
+    with con.cursor() as cursor:
         cursor.execute(query_insert_events_table, event_features)
-        connection.commit()
+        con.commit()
 
 
-def update_results_table(connection, result_features):
-    query_insert_results_table = f"""INSERT INTO results(event_id, subevent_name, country, age_group, event_status, 
-    swim_time_sec, t1_time_sec, bike_time_sec, t2_time_sec, run_time_sec, finish_time_sec, finish_rank_group, 
-    finish_rank_gender, finish_rank_overall, rank_point, name, gender) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,
-    %s,%s,%s,%s) """
+def update_results_table(con, result_features):
+    """
 
-    with connection.cursor() as cursor:
+    :param con:
+    :param result_features:
+    :return:
+    """
+    query_insert_results_table = f"""INSERT INTO results(event_id, athlete_id, result_id, subevent_name, country,
+    age_group, event_status, swim_time_sec, t1_time_sec, bike_time_sec, t2_time_sec, run_time_sec, finish_time_sec,
+    finish_rank_group, finish_rank_gender, finish_rank_overall, rank_point, name, gender) 
+    VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) """
+
+    with con.cursor() as cursor:
         cursor.executemany(query_insert_results_table, result_features)
-        connection.commit()
+        con.commit()
 
 
-def get_event_id_missing_feature(connection, table, missing_feature):
+def get_event_id_missing_feature(con, table, missing_feature):
     """
     Get the a list of event ids in a given table where data is missing in a specific column (=feature
-    :param connection:
+    :param con:
     :param table:
     :param missing_feature:
     :return:
@@ -151,17 +172,17 @@ def get_event_id_missing_feature(connection, table, missing_feature):
 
     query_missing_data = f"""SELECT event_id FROM {table} WHERE {missing_feature} is NULL"""
 
-    with connection.cursor() as cursor:
+    with con.cursor() as cursor:
         cursor.execute(query_missing_data)
         list_event_ids = [dictionary.get('event_id') for dictionary in cursor.fetchall()]
 
     return list_event_ids
 
 
-def get_race_card_from_event_id(connection, event_id):
+def get_race_card_from_event_id(con, event_id):
     """
     Gets the race card given an event id
-    :param connection:
+    :param con:
     :param event_id:
     :return:
     """
@@ -169,17 +190,17 @@ def get_race_card_from_event_id(connection, event_id):
     query_race_card = f"""SELECT race_card FROM races as r JOIN events_im AS e ON r.race_link = e.race_link
                         WHERE event_id = '{event_id}'"""
 
-    with connection.cursor() as cursor:
+    with con.cursor() as cursor:
         cursor.execute(query_race_card)
         race_card = cursor.fetchone().get('race_card')
 
     return race_card
 
 
-def update_missing_date_from_event_id(connection, event_id, table, feature_to_fill, value):
+def update_missing_date_from_event_id(con, event_id, table, feature_to_fill, value):
     """
     Updating the database with the value to fill with in for the given feature
-    :param connection:
+    :param con:
     :param event_id:
     :param table:
     :param feature_to_fill:
@@ -195,15 +216,15 @@ def update_missing_date_from_event_id(connection, event_id, table, feature_to_fi
     else:
         query_update_missing_value = """"""
 
-    with connection.cursor() as cursor:
+    with con.cursor() as cursor:
         cursor.execute(query_update_missing_value)
-        connection.commit()
+        con.commit()
 
 
-def deduct_distances_from_series_feature(connection, event_id):
+def deduct_distances_from_series_feature(con, event_id):
     """
     Deduct the distance of the event from the series name
-    :param connection:
+    :param con:
     :param event_id:
     :return:
     """
@@ -216,7 +237,7 @@ def deduct_distances_from_series_feature(connection, event_id):
                             FROM races AS r LEFT JOIN events_im AS e ON r.race_link = e.race_link 
                             WHERE event_id = '{event_id}' """
 
-    with connection.cursor() as cursor:
+    with con.cursor() as cursor:
         cursor.execute(query_deduct_distance)
         distance_miles = float(cursor.fetchone().get('distance_miles'))
 
@@ -225,10 +246,10 @@ def deduct_distances_from_series_feature(connection, event_id):
     return distance_miles, distance_kms
 
 
-def deduct_city_from_race_card(connection, event_id):
+def deduct_city_from_race_card(con, event_id):
     """
     Deduct the city from the race_card name
-    :param connection:
+    :param con:
     :param event_id:
     :return:
     """
@@ -236,7 +257,7 @@ def deduct_city_from_race_card(connection, event_id):
                             FROM races AS r LEFT JOIN events_im AS e ON r.race_link = e.race_link 
                             WHERE event_id = '{event_id}' """
 
-    with connection.cursor() as cursor:
+    with con.cursor() as cursor:
         cursor.execute(query_deduct_city)
         race_card_name = cursor.fetchone().get('race_card')
 
@@ -245,10 +266,10 @@ def deduct_city_from_race_card(connection, event_id):
     return city
 
 
-def deduct_continent_from_races(connection, event_id):
+def deduct_continent_from_races(con, event_id):
     """
     Deduct the continent from races continent
-    :param connection:
+    :param con:
     :param event_id:
     :return:
     """
@@ -256,7 +277,7 @@ def deduct_continent_from_races(connection, event_id):
                             FROM races AS r LEFT JOIN events_im AS e ON r.race_link = e.race_link 
                             WHERE event_id = '{event_id}' """
 
-    with connection.cursor() as cursor:
+    with con.cursor() as cursor:
         cursor.execute(query_deduct_continent)
         races_continent = cursor.fetchone().get('continent')
 
@@ -266,7 +287,6 @@ def deduct_continent_from_races(connection, event_id):
 
 
 if __name__ == '__main__':
-
     connection = create_connection_db()
     use_ironman_db(connection, config.database_name)
     print(deduct_continent_from_races(connection, event_id='00AFC145-4270-E611-940F-005056951BF1'))

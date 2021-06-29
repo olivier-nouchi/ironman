@@ -7,24 +7,26 @@ import time
 import create_db
 import pandas as pd
 
+
 def update_race_status():
     """
     Update the race status since the registration can change over time
     :return:
     """
-    #TODO create a function to update the race status over time
+    # TODO create a function to update the race status over time
     pass
 
-def get_existing_event_id(connection, pk_column='event_id', table='events_im'):
+
+def get_existing_event_id(con, pk_column='event_id', table='events_im'):
     """
     Get a list of the existing event id in the database
-    :param connection:
+    :param con:
     :param pk_column:
     :param table:
     :return:
     """
     q = f"select {pk_column} from {table}"
-    list_existing_event_id = pd.read_sql(q, connection)[pk_column].tolist()
+    list_existing_event_id = pd.read_sql(q, con)[pk_column].tolist()
 
     return list_existing_event_id
 
@@ -222,15 +224,17 @@ def scrape_event_results(connection, list_event_id_to_scrape_from):
                     rank_points = result.get('RankPoints')
                     athlete_name = result.get('Contact').get('FullName') if result.get('Contact') else ''
                     gender = result.get('Contact').get('Gender') if result.get('Contact') else ''
+                    athlete_id = result.get('ContactID') if result.get('ContactId') else ''
+                    result_id = result.get('ResultId') if result.get('ResultId') else ''
 
                     result_feature = (
-                        event_id, subevent_name, country, age_group, event_status, swim_time, t1_time, bike_time,
-                        t2_time, run_time, finish_time, finish_rank_group,
+                        event_id, athlete_id, result_id, subevent_name, country, age_group, event_status, swim_time,
+                        t1_time, bike_time, t2_time, run_time, finish_time, finish_rank_group,
                         finish_rank_gender, finish_rank_overall, rank_points, athlete_name, gender)
 
                     result_feature_list.append(result_feature)
 
-        # update the db
+        # Add these results to the DB
         create_db.update_results_table(connection, result_features=result_feature_list)
 
         # Following progress
@@ -245,6 +249,7 @@ def scrape_event_results(connection, list_event_id_to_scrape_from):
             update_threshold += 5
 
     print("FINISHED")
+
 
 if __name__ == '__main__':
     pass
