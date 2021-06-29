@@ -23,5 +23,9 @@ In the `input` directory create a json file named `user_config.json` that contai
 developper tools, "Headers" section, "Request Headers".
   
 
+# Notes
+- If the scraping stops on the way, it will automatically resume back where it stopped. It won't scrape events that it
+has already scraped.
+
 ## License
 MIT License (please refer to LICENSE.txt)

@@ -76,11 +76,11 @@ def create_tables(con, which_tables=()):
                                 id INT AUTO_INCREMENT UNIQUE KEY,
                                 event_id VARCHAR(100),
                                 athlete_id VARCHAR(100),
-                                result_id VARCHAR(100),
-                                subevent_name VARCHAR(50),
+                                result_id VARCHAR(100) PRIMARY KEY,
+                                subevent_name VARCHAR(100),
                                 country VARCHAR(100),
                                 age_group VARCHAR(50),
-                                event_status VARCHAR(50),
+                                event_status VARCHAR(100),
                                 swim_time_sec INT,
                                 t1_time_sec INT,
                                 bike_time_sec INT,
@@ -92,8 +92,7 @@ def create_tables(con, which_tables=()):
                                 finish_rank_overall INT,
                                 rank_point DECIMAL(8,2),
                                 name VARCHAR(100),
-                                gender CHAR(1),
-                                PRIMARY KEY (event_id, athlete_id)
+                                gender CHAR(1)
                                 )"""
 
     # creates a mapping between the names of the tables to create and the queries
@@ -154,7 +153,7 @@ def update_results_table(con, result_features):
     query_insert_results_table = f"""INSERT INTO results(event_id, athlete_id, result_id, subevent_name, country,
     age_group, event_status, swim_time_sec, t1_time_sec, bike_time_sec, t2_time_sec, run_time_sec, finish_time_sec,
     finish_rank_group, finish_rank_gender, finish_rank_overall, rank_point, name, gender) 
-    VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) """
+    VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) """
 
     with con.cursor() as cursor:
         cursor.executemany(query_insert_results_table, result_features)

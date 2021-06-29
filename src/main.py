@@ -9,7 +9,7 @@ import pymysql
 if __name__ == "__main__":
 
     # Boolean whether to scrape the event ids (takes ~10 minutes)
-    is_scrape_event_id = True
+    is_scrape_event_id = False
 
     # Creates a connection to the local database
     connection = create_db.create_connection_db()
@@ -23,7 +23,8 @@ if __name__ == "__main__":
     except pymysql.err.OperationalError as e:
         print(e)
 
-    # create_db.drop_table(connection, which_tables=["events"])
+    # create_db.drop_table(connection, which_tables=["results"])
+    # create_db.create_tables(connection, which_tables=["results"])
 
     # Creates a dictionary that contains the links to all the existing races on the Ironman website ironman.com
     dict_races = scrape_ironman.get_race_names()
