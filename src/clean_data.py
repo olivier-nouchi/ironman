@@ -29,13 +29,13 @@ def get_missing_latitude_longitude(place_name_to_look_for):
 
 def fill_missing_lat_long(cnx):
     """
-    Filling missing lat, long
+    Filling missing latitudes, longitudes
     :param cnx:
-    :return:
+    :return: None
     """
-    # We assume that if the latitude is missing, the longitude is missing as well
+    # Gets a list of all the events because supposedly no events is missing the event_id
     list_events_missing_lat_long = create_db.get_event_id_missing_feature(cnx, table="events_im",
-                                                                          missing_feature="latitude")
+                                                                          missing_feature="event_id")
     for event_id in list_events_missing_lat_long:
         place_name = create_db.get_race_card_from_event_id(cnx, event_id)
         lat, long = get_missing_latitude_longitude(place_name)
@@ -49,7 +49,7 @@ def fill_missing_distances(cnx):
     """
     Filling missing distances miles and kms based on the series feature in the races table
     :param cnx:
-    :return:
+    :return: None
     """
     # We assume that if the dist in kms is missing, the dist in miles is missing as well
     list_events_missing_dist_km_miles = create_db.get_event_id_missing_feature(cnx, table="events_im",
@@ -67,7 +67,7 @@ def fill_missing_city(cnx):
     """
     Filling missing cities in the events_im table based on info from the races table
     :param cnx:
-    :return:
+    :return: None
     """
     list_events_missing_city = create_db.get_event_id_missing_feature(cnx, table="events_im",
                                                                       missing_feature="city")
@@ -82,7 +82,7 @@ def fill_missing_continent(cnx):
     """
     Filling missing continent in the events_im table based on info from the races table
     :param cnx:
-    :return:
+    :return: None
     """
     list_events_missing_continent = create_db.get_event_id_missing_feature(cnx, table="events_im",
                                                                            missing_feature="continent")

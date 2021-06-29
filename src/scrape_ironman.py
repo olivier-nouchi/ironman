@@ -23,9 +23,9 @@ def get_existing_event_id(con, pk_column='event_id', table='events_im'):
     :param con:
     :param pk_column:
     :param table:
-    :return:
+    :return: a list of the entries for a given attribute for a given table
     """
-    q = f"select {pk_column} from {table}"
+    q = f"SELECT {pk_column} FROM {table}"
     list_existing_event_id = pd.read_sql(q, con)[pk_column].tolist()
 
     return list_existing_event_id
@@ -34,8 +34,8 @@ def get_existing_event_id(con, pk_column='event_id', table='events_im'):
 def get_site_event_id(dictionary_races):
     """
     get a list of the event id listed on the website ironman.com
-    :param dictionary_races:
-    :return:
+    :param dictionary_races: a dictionary containing information about the races
+    :return: list of the event ids on the website
     """
     dict_event_id = get_dict_event_id(dictionary_races)
     list_site_event_id = list(dict_event_id.keys())
@@ -46,9 +46,9 @@ def get_to_scrape_event_id(list_site_event_id, list_existing_event_id):
     """
     get a list of the event id to scrape from (intersection of what already exists in the db and the ones listed on
     the website)
-    :param list_site_event_id:
-    :param list_existing_event_id:
-    :return:
+    :param list_site_event_id: list of the event ids on the website
+    :param list_existing_event_id: list of the event ids already existing in the db
+    :return: a list of the event ids to scrape
     """
     list_scrape_from_event_id = set(list_site_event_id) - set(list_site_event_id).intersection(
         set(list_existing_event_id))
@@ -90,6 +90,8 @@ def get_race_names():
 def get_dict_event_id(dict_races):
     """
     Build from the races links a dictionary with the mapping event_id: race
+    :param dict_races: a dictionary with information about the races
+    :return: a dictionary with all the event ids relative to the races
     """
     # Define the list of races (PK to identify the race)
     list_race_links = dict_races.get('race_link')
@@ -124,8 +126,10 @@ def get_dict_event_id(dict_races):
 def scrape_events(connection, dict_event_id_race, list_scrape_from_event_id):
     """
     Scrape the data related to events and stores it in the events table in the ironman database
-    input: a list of event ids
-    output: none
+    :param connection: connection to the db
+    :param dict_event_id_race: a dictionary containing all the event ids about the race
+    :param list_scrape_from_event_id: a list with the event ids to scrape from
+    :return:
     """
 
     start_time = time.time()  # start time to evaluate how much time does the process take
@@ -177,12 +181,15 @@ def scrape_events(connection, dict_event_id_race, list_scrape_from_event_id):
             # Update threshold
             update_threshold += 5
 
+    print("Finished scraping events")
+
 
 def scrape_event_results(connection, list_event_id_to_scrape_from):
     """
     Scrape the results for each event and stores it in the results table in the ironman database
-    input: a list of event ids
-    output: none
+    :param connection: connection to the db
+    :param list_event_id_to_scrape_from: a list of event ids to scrape from
+    :return: None
     """
     start_time = time.time()  # start time to evaluate how much time does the process take
     update_threshold = 0  # an update displays when the pct_progress > threshold
@@ -249,7 +256,7 @@ def scrape_event_results(connection, list_event_id_to_scrape_from):
             # Update threshold
             update_threshold += 5
 
-    print("FINISHED")
+    print("Finished scraping results")
 
 
 if __name__ == '__main__':

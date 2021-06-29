@@ -16,15 +16,12 @@ if __name__ == "__main__":
 
     # If the database "ironman" exists, we use it, otherwise we create it and the according tables
     try:
+        create_db.create_database(connection, config.database_name)
         create_db.use_ironman_db(connection, config.database_name)
         create_db.create_tables(connection, which_tables=["results", "events_im", "races"])
 
-    except pymysql.err.OperationalError:
-        print("Did not find the Ironman database. Creating it...")
-        create_db.create_database(connection, config.database_name)
-        print("Creating the tables...")
-        create_db.create_tables(connection, which_tables=["results", "events_im", "races"])
-        create_db.use_ironman_db(connection, config.database_name)
+    except pymysql.err.OperationalError as e:
+        print(e)
 
     # create_db.drop_table(connection, which_tables=["events"])
 
