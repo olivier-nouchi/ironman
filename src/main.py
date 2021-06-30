@@ -5,6 +5,7 @@ import scrape_ironman
 import pymysql
 
 # TODO: add a logger
+# TODO: add testing
 
 if __name__ == "__main__":
 
@@ -23,8 +24,8 @@ if __name__ == "__main__":
     except pymysql.err.OperationalError as e:
         print(e)
 
-    # create_db.drop_table(connection, which_tables=["results"])
-    # create_db.create_tables(connection, which_tables=["results"])
+    create_db.drop_table(connection, which_tables=["results"])
+    create_db.create_tables(connection, which_tables=["results"])
 
     # Creates a dictionary that contains the links to all the existing races on the Ironman website ironman.com
     dict_races = scrape_ironman.get_race_names()
@@ -72,8 +73,6 @@ if __name__ == "__main__":
     for race in race_features:
         if race[config.RACE_LINK_DICT_RACES] in lst_scrape_from_races:
             race_features_to_scrape_from.append(race)
-
-    print(f"There are {len(race_features_to_scrape_from)} races to scrape from.")
 
     # Add them to the races table
     create_db.update_races_table(connection, race_features_to_scrape_from)

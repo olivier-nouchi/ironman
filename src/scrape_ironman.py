@@ -71,10 +71,21 @@ def get_race_names():
                   "race_status": [], "swim": [], "bike": [], "run": [],
                   "air_avg_temp": [], "water_avg_temp": [], "airport": []}
 
+    # Make sure that the number of features is the same as the length of dict races
     assert (len(list_race_features) == len(dict_races))
+
+    # Make sure that there are no duplicate of race links (since it's the primary key of the races table)
 
     for race in tqdm(all_races.get('values')[1:]):  # the first one is the model
         for key, feature in zip(dict_races, list_race_features):
+            # if the race link already exists then delete the one before and keep the last one
+            if key == "race_link" and race[feature] in dict_races.get("race_link"):
+                # find the index at which was the existing one
+                existing_race_link_index = dict_races.get('race_link').index(race[feature])
+                # delete the data at this index for all the features
+                for k in dict_races:
+                    del dict_races[k][existing_race_link_index]
+            # eventually add the new race link
             dict_races[key].append(race[feature])
 
     # Converting to int and degrees the temperature
@@ -232,7 +243,7 @@ def scrape_event_results(connection, list_event_id_to_scrape_from):
                     rank_points = result.get('RankPoints')
                     athlete_name = result.get('Contact').get('FullName') if result.get('Contact') else ''
                     gender = result.get('Contact').get('Gender') if result.get('Contact') else ''
-                    athlete_id = result.get('ContactID') if result.get('ContactId') else ''
+                    athlete_id = result.get('ContactId') if result.get('ContactId') else ''
                     result_id = result.get('ResultId') if result.get('ResultId') else ''
 
                     result_feature = (
@@ -260,11 +271,11 @@ def scrape_event_results(connection, list_event_id_to_scrape_from):
 
 
 if __name__ == '__main__':
-    pass
-    # event_id = '4B014045-C399-E911-A97A-000D3A37468C'
-    # event_id = 'E79709F2-36A2-E811-A960-000D3A3740B7'
-    # parameters = """?%24limit=200&%24skip=0&%24sort%5BFinishRankOverall%5D=1"""
-    # url_results = config.URL_RESULTS + event_id + parameters
-    # print(url_results)
-    # total_records_event = requests.get(url_results, headers=config.HEADERS).json()
-    # print(total_records_event)
+
+    event_id = '4B014045-C399-E911-A97A-000D3A37468C'
+    event_id = 'E79709F2-36A2-E811-A960-000D3A3740B7'
+    parameters = """?%24limit=200&%24skip=0&%24sort%5BFinishRankOverall%5D=1"""
+    url_results = config.URL_RESULTS + event_id + parameters
+    print(url_results)
+    total_records_event = requests.get(url_results, headers=config.HEADERS).json()
+    print(len(total_records_event.get('data')))
