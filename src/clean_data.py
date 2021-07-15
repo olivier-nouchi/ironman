@@ -2,6 +2,7 @@ import requests
 import config
 import urllib
 import create_db
+import scrape_ironman
 
 
 def get_missing_latitude_longitude(place_name_to_look_for):
@@ -51,11 +52,11 @@ def fill_missing_distances(cnx):
     :param cnx:
     :return: None
     """
-    # We assume that if the dist in kms is missing, the dist in miles is missing as well
-    list_events_missing_dist_km_miles = create_db.get_event_id_missing_feature(cnx, table="events_im",
-                                                                               missing_feature="dist_km")
+    # Some events don't have the right distance, and therefore we update all the events with the right distances
 
-    for event_id in list_events_missing_dist_km_miles:
+    list_all_events = scrape_ironman.get_existing_event_id(con=connection, pk_column="event_id", table="events_im")
+
+    for event_id in list_all_events:
         dist_miles, dist_kms = create_db.deduct_distances_from_series_feature(cnx, event_id)
         create_db.update_missing_date_from_event_id(cnx, event_id=event_id, table="events_im",
                                                     feature_to_fill="dist_mi", value=dist_miles)
@@ -91,6 +92,14 @@ def fill_missing_continent(cnx):
         continent = create_db.deduct_continent_from_races(cnx, event_id)
         create_db.update_missing_date_from_event_id(cnx, event_id=event_id, table="events_im",
                                                     feature_to_fill="continent", value=continent)
+
+
+def correct_wrong_distances(cnx):
+    """
+    Some distances are wrong: IRONMAN are sometimes
+    :param cnx:
+    :return:
+    """
 
 
 if __name__ == '__main__':

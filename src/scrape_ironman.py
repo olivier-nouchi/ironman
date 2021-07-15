@@ -272,10 +272,14 @@ def scrape_event_results(connection, list_event_id_to_scrape_from):
 
 if __name__ == '__main__':
 
+
     event_id = '4B014045-C399-E911-A97A-000D3A37468C'
     event_id = 'E79709F2-36A2-E811-A960-000D3A3740B7'
+    event_id = '29D863C5-0F58-49FE-B1F0-63A946CA4A0F'
     parameters = """?%24limit=200&%24skip=0&%24sort%5BFinishRankOverall%5D=1"""
-    url_results = config.URL_RESULTS + event_id + parameters
-    print(url_results)
-    total_records_event = requests.get(url_results, headers=config.HEADERS).json()
-    print(len(total_records_event.get('data')))
+    url_event = config.URL_EVENT + event_id
+    data = requests.get(url_event, headers=config.HEADERS).json()
+
+    print(data)
+
+

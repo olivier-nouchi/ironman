@@ -40,7 +40,7 @@ dict_continents = {"Africa": "AF", "Asia": "AS", "Europe": "EU", "North America"
                    "South America": "SA"}
 
 # Mapping distances miles to kms
-dict_miles_to_kms = {70.30: 113.00, 140.60: 226.00, 32.00: 51.50}
+dict_miles_to_kms = {70.3: 113.0, 140.6: 226.0, 32.0: 51.5}
 
 # Pickles
 dict_event_id_pickle_filepath = os.path.join(ROOT_DIR, pickle_dir, dict_event_id_race_filename)
